@@ -1,0 +1,26 @@
+# Chrome DevTools MCP — bundle layer.
+#
+# Mounts the shared browser-use service and the Chrome DevTools MCP provider, so
+# an Agent can drive and inspect a real Chrome through the upstream DevTools
+# tools. The two plugin packages are declared as dependencies of this bundle, so
+# they install with it and the Loader resolves them from the profile.
+#
+# Only one browser-use provider may be registered per composition: do not also
+# mount the Playwright or Stagehand providers.
+- insert:
+    - id: browser-use
+      name: '@deepseek-ai/dsh-browser-use'
+    - id: browser-use-chrome-devtools
+      name: '@deepseek-ai/dsh-experimental-browser-use-chrome-devtools-mcp'
+      config:
+        # `launch` starts an isolated Chrome for each live Session. Use `attach`
+        # with `endpoint` to drive a Chrome you started yourself instead, which
+        # keeps that browser's tabs, cookies, and logins.
+        mode: launch
+        # false opens a visible window; true suits servers and CI.
+        headless: false
+        # Chromium executable. Omitted, the provider uses the upstream server's
+        # own discovery, which finds a normal Chrome installation. Set a path
+        # only when discovery fails or the host cannot sandbox Chrome; see
+        # Troubleshooting in the README.
+        # executablePath: /usr/bin/google-chrome

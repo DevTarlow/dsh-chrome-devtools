@@ -1,0 +1,44 @@
+{
+  "name": "dsh-chrome-devtools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "DeepSeek Harness bundle: let an Agent control and inspect a live Chrome browser through Chrome DevTools MCP.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevTarlow/dsh-chrome-devtools.git"
+  },
+  "homepage": "https://github.com/DevTarlow/dsh-chrome-devtools#readme",
+  "bugs": {
+    "url": "https://github.com/DevTarlow/dsh-chrome-devtools/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "deepseek",
+    "deepseek-harness",
+    "dsh-plugin",
+    "browser",
+    "chrome",
+    "chrome-devtools",
+    "devtools",
+    "mcp",
+    "automation"
+  ],
+  "dependencies": {
+    "@deepseek-ai/dsh-browser-use": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-experimental-browser-use-chrome-devtools-mcp": "0.2.0-rc.2"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
