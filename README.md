@@ -133,6 +133,12 @@ pre-stable and pin the DSH version exactly. Update the two `dependencies` in
 - A launched browser belongs to one Session. Reloading or resuming a Session
   starts fresh browser state; the Session log does not restore cookies or pages.
 - Cancelling a call cannot undo a navigation or click already delivered.
+- Tools that write a file — `take_screenshot`, `take_heapsnapshot`, a saved
+  trace, a network response body — can only write under the operating system's
+  temp directory. This integration passes no filesystem roots, so a path inside
+  your project is refused with `Access denied: path … is not within any of the
+  configured workspace roots`. Ask for screenshots as returned images instead:
+  they reach the model as attachments without touching the filesystem.
 - Tool schemas follow the pinned `chrome-devtools-mcp` release and carry no DSH
   stability promise.
 - Usage statistics are disabled. Performance tools keep their upstream behavior,
