@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "DeepSeek Harness bundle: let an Agent control and inspect a live Chrome browser through Chrome DevTools MCP.",
+  "description": "Give your DeepSeek Harness Agent a real Chrome browser to drive and inspect.",
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -1,6 +1,6 @@
 # Chrome DevTools
 
-Let your DeepSeek Harness Agent drive and inspect a real Chrome browser.
+Give your DeepSeek Harness Agent a real Chrome browser to drive and inspect.
 
 This plugin installs [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp)
 as the Harness browser provider, so the Agent works a Chrome window you can
