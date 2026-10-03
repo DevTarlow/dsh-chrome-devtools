@@ -147,6 +147,13 @@ plugin builds on are pre-stable and pin the Harness version exactly. Update the
 two `dependencies` in [package.json](package.json) to the versions that match your
 Harness release.
 
+**The console prints `Update available: 1.9.0 -> 1.10.1`.** That notice comes from
+the Chrome DevTools MCP server this plugin mounts, not from the plugin itself, and
+the version it offers is chosen by DeepSeek Harness. The `npm install` it suggests
+does nothing here: the plugin starts its own pinned copy, so running that command
+only adds a stray dependency wherever you ran it. Ignore the notice, or start the
+Harness with `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1` to silence it.
+
 ## Limits
 
 - One browser plugin per Harness. Do not also install the Playwright or Stagehand
