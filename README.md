@@ -1,53 +1,66 @@
-# dsh-chrome-devtools
+# Chrome DevTools
 
-Let a DeepSeek Harness Agent control and inspect a live Chrome browser.
+Let your DeepSeek Harness Agent drive and inspect a real Chrome browser.
 
-This bundle mounts [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp)
-as the Harness browser provider. The Agent gets the upstream DevTools tools, so
-it can navigate, read the page, take screenshots, click and type, read console
-messages and network requests, run scripts, record performance traces, and run
-Lighthouse audits.
+This plugin installs [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp)
+as the Harness browser provider, so the Agent works a Chrome window you can
+watch. It opens pages, reads them, clicks and types, takes screenshots, reads
+console messages and network requests, runs scripts, records performance traces,
+and runs Lighthouse audits.
 
-## What the Agent gets
+Chrome belongs to the chat that opened it. Close the chat and its browser goes
+with it, so one conversation can never drive another one's pages.
 
-29 tools, named `mcp__chrome-devtools-mcp__<tool>`:
+## What you can ask for
 
-| Area | Tools |
-| --- | --- |
-| Navigate | `new_page`, `navigate_page`, `select_page`, `close_page`, `list_pages`, `wait_for` |
-| Read | `take_snapshot`, `take_screenshot`, `evaluate_script`, `get_console_message`, `list_console_messages` |
-| Interact | `click`, `fill`, `fill_form`, `hover`, `drag`, `press_key`, `type_text`, `upload_file`, `handle_dialog` |
-| Inspect | `list_network_requests`, `get_network_request`, `performance_start_trace`, `performance_stop_trace`, `performance_analyze_insight`, `lighthouse_audit` |
-| Emulate | `emulate`, `resize_page`, `take_heapsnapshot` |
-
-Once installed, ask for something like *"open example.com, screenshot it, and
-report the console errors"*.
-
-## Requirements
-
-- DeepSeek Harness with the `plugin_manager` tool. Verified against `0.2.0-rc.2`.
-- Google Chrome or Chrome for Testing, current stable. The bundle uses the
-  upstream server's Chrome discovery, so a normal installation needs no setup.
-- A desktop session. Launch mode opens a real window by default; see
-  [Configuration](#configuration) for servers and CI.
+- *"Open example.com, screenshot it, and tell me the console errors."*
+- *"Go to my app on localhost:3000, sign up with a test account, and tell me
+  whether the confirmation step works."*
+- *"Record a performance trace on localhost:3000 and explain the largest
+  contentful paint."*
+- *"Run a Lighthouse audit on localhost:3000 and tell me what fails
+  accessibility."*
+- *"Screenshot that page at 375 pixels wide so I can check the mobile layout."*
+- *"Click the thing that is broken and tell me exactly what the network request
+  returns."*
 
 ## Install
 
-Ask your DSH agent:
+1. In the Harness, open **Plugins** in the left sidebar.
+2. Press **Install**.
+3. Paste this repository's address:
 
-> Install the bundle `github:DevTarlow/dsh-chrome-devtools`.
+   ```
+   https://github.com/DevTarlow/dsh-chrome-devtools
+   ```
 
-The agent calls `plugin_manager` with `action: install_bundle` and that spec. To
-pin a release, append its tag: `github:DevTarlow/dsh-chrome-devtools#<tag>`.
+4. Install it, then refresh the page.
+5. **Start a new chat.** The Agent connects a browser when a chat begins, so a
+   chat that was already open when you installed keeps running without one.
 
-**Then start a new chat.** The provider connects a browser when a Session is
-created, so a chat that was already open keeps running without one.
+The install dialog accepts a GitHub address, a package name, or a local folder.
+To pin the release this README describes, paste
+`github:DevTarlow/dsh-chrome-devtools#v0.1.0` instead. If you would rather ask
+your Agent, say: *"Install the bundle `github:DevTarlow/dsh-chrome-devtools`."*
 
-## Configuration
+You need Google Chrome (or Chrome for Testing) at its current stable version.
+The plugin finds it by itself, so a normal installation needs no configuration.
+You also need a desktop session, because the browser opens a real window.
 
-The bundle sets both rows. Change them by overriding the provider row by id in
-your profile's `cordis.patch.yml`; the whole `config` block is replaced, so
-restate every field you still want.
+## Check it works
+
+In a new chat, ask:
+
+> Open example.com and tell me its title and any console errors.
+
+A Chrome window opens, loads the page, and the Agent answers from what it read.
+If you would rather not open a window, see `headless` under [Settings](#settings).
+
+## Settings
+
+The plugin's defaults are set in [cordis.patch.yml](cordis.patch.yml). To change
+one, put the same override in your own Harness profile's `cordis.patch.yml` — for
+example `~/.dsh/profiles/web/cordis.patch.yml` — then start a new chat.
 
 ```yaml
 - id: browser-use-chrome-devtools
@@ -57,19 +70,22 @@ restate every field you still want.
     headless: true
 ```
 
-| Field | Default here | Meaning |
+Any setting you leave out falls back to the plugin's own default rather than this
+bundle's, so restate every value you still want whenever you edit that block.
+
+| Setting | Default | What it does |
 | --- | --- | --- |
-| `mode` | `launch` | `launch` starts an isolated Chrome per live Session; `attach` drives a browser you started yourself |
-| `headless` | `false` | `false` opens a visible window; `true` runs without one, for servers and CI |
-| `executablePath` | unset | Chromium to launch. Unset uses upstream discovery. Set it only for a non-standard install or a wrapper |
-| `endpoint` | — | Required by `attach`: an `http://`, `https://`, `ws://`, or `wss://` browser debugging endpoint |
-| `toolCallTimeoutMs` | MCP client default | Per-call timeout in milliseconds |
+| `mode` | `launch` | `launch` starts a fresh Chrome for each chat. Use `attach` to drive a browser you started yourself. |
+| `headless` | `false` | `false` opens a window you can watch. Set `true` on a server or in CI, where there is no display. |
+| `executablePath` | unset | Which Chrome to launch. Left unset, the plugin finds it. Set it for an unusual install, or for the wrapper in [Common questions](#common-questions). |
+| `endpoint` | — | Required by `attach`: the debugging address of the browser you started, such as `http://127.0.0.1:9222`. |
+| `toolCallTimeoutMs` | the client's own | How long one tool call may take, in milliseconds. |
 
 ### Drive your own browser instead
 
-`launch` gives each Session a fresh, isolated profile, so it starts logged out.
-To use tabs, cookies, and logins you already have, start Chrome yourself and
-attach:
+`launch` gives every chat a fresh profile, which means it starts logged out. To
+keep the tabs, cookies and logins you already have, start Chrome yourself and
+point the plugin at it.
 
 ```sh
 google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.dsh-chrome"
@@ -83,20 +99,20 @@ google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.dsh-chrome"
     endpoint: http://127.0.0.1:9222
 ```
 
-One Session holds the attachment at a time. Ending that Session disconnects and
-leaves your browser running.
+One chat holds that browser at a time. When the chat ends, the plugin disconnects
+and leaves your browser running.
 
-## Troubleshooting
+## Common questions
 
-**The browser tools are missing.** Start a new chat; the provider does not adopt
-Sessions that were already open when it loaded.
+**The browser tools are missing.** Start a new chat. The plugin connects a
+browser when a chat is created, so chats that were already open do not have one.
 
-**`No usable sandbox!`, or Chrome exits immediately.** Chrome cannot start with
-its own sandbox on this host. This is common in containers and WSL, on Ubuntu
-23.10+ where AppArmor restricts unprivileged user namespaces, and wherever
-`/opt/google/chrome/chrome-sandbox` is not owned by `root` with mode `4755`.
-Repairing that needs root. Otherwise launch Chrome through a wrapper that adds
-`--no-sandbox`, and point `executablePath` at it:
+**Chrome exits immediately, or the Agent reports `No usable sandbox!`.** Chrome
+cannot start with its own sandbox on your machine. This is common in containers
+and WSL, on Ubuntu 23.10+ where AppArmor restricts unprivileged user namespaces,
+and wherever `/opt/google/chrome/chrome-sandbox` is not owned by `root` with mode
+`4755`. Repairing that needs root. Otherwise launch Chrome through a wrapper that
+adds `--no-sandbox` and point `executablePath` at it:
 
 ```sh
 printf '#!/bin/sh\nexec /usr/bin/google-chrome --no-sandbox "$@"\n' > ~/chrome-no-sandbox
@@ -107,48 +123,60 @@ chmod +x ~/chrome-no-sandbox
         executablePath: /home/you/chrome-no-sandbox
 ```
 
-This runs untrusted page content without OS sandboxing. Prefer repairing the
-sandbox, and treat the wrapper as a last resort.
+That runs untrusted page content without the operating system's sandbox. Fix the
+sandbox if you can, and treat the wrapper as a last resort.
 
-**`Missing X server to start the headful browser`.** The host has no display. Set
-`headless: true`.
+**`Missing X server to start the headful browser`.** Your machine has no display.
+Set `headless: true`.
 
-**A page shows a login wall, or the browser starts empty.** Launch mode starts
-with a fresh profile by design. Use `attach` for a browser that is already
-logged in.
+**The page shows a login wall, or the browser starts empty.** That is what a
+fresh profile looks like. Use `attach` above to bring your own logged-in browser.
 
-**Screenshots arrive as text instead of an image.** The model route must accept
-images, and the profile must have an attachment store, for the screenshot to
-reach the model.
+**A screenshot arrives as text instead of a picture.** Your model route has to
+accept images, and your profile needs an attachment store, for the image to reach
+the model.
 
-**Installing was rejected for incompatible peers.** The browser-use packages are
-pre-stable and pin the DSH version exactly. Update the two `dependencies` in
-`package.json` to the versions matching your Harness release.
+**Saving a screenshot to a file is refused.** The browser tools may only write
+under your operating system's temp directory — a path inside your project is
+answered with `Access denied: path … is not within any of the configured
+workspace roots`. Ask for the screenshot as an image instead; it reaches the model
+without touching the filesystem.
+
+**Installing was rejected for incompatible peers.** The browser packages this
+plugin builds on are pre-stable and pin the Harness version exactly. Update the
+two `dependencies` in [package.json](package.json) to the versions that match your
+Harness release.
 
 ## Limits
 
-- One browser-use provider per composition. Do not also mount the Playwright or
-  Stagehand providers.
-- Chromium only. Firefox and WebKit are not selectable.
-- A launched browser belongs to one Session. Reloading or resuming a Session
-  starts fresh browser state; the Session log does not restore cookies or pages.
-- Cancelling a call cannot undo a navigation or click already delivered.
-- Tools that write a file — `take_screenshot`, `take_heapsnapshot`, a saved
-  trace, a network response body — can only write under the operating system's
-  temp directory. This integration passes no filesystem roots, so a path inside
-  your project is refused with `Access denied: path … is not within any of the
-  configured workspace roots`. Ask for screenshots as returned images instead:
-  they reach the model as attachments without touching the filesystem.
-- Tool schemas follow the pinned `chrome-devtools-mcp` release and carry no DSH
-  stability promise.
-- Usage statistics are disabled. Performance tools keep their upstream behavior,
-  including sending trace URLs to the Google CrUX API.
+- One browser plugin per Harness. Do not also install the Playwright or Stagehand
+  browser providers.
+- Chromium only. Firefox and WebKit are not offered.
+- A launched browser belongs to one chat. Reloading or resuming a chat starts
+  fresh browser state; the conversation does not restore cookies or pages.
+- Cancelling a call cannot undo a navigation or click that already happened.
+- Tool definitions come from the pinned `chrome-devtools-mcp` release, not from
+  the Harness, so they carry no stability promise.
+- Usage statistics are off. Performance tools otherwise behave as upstream
+  documents them, including sending trace URLs to the Google CrUX API.
 
-## For maintainers
+## Removing it
 
-`verify-live.mjs` drives the pinned MCP server over stdio without a Harness: it
-lists the tool catalog, opens a URL, reads the page title, and writes a
-screenshot. Run it from a DeepSeek Harness source checkout.
+Open **Plugins**, find **dsh-chrome-devtools**, and uninstall it. Chats you start
+afterwards have no browser tools. If you added a `cordis.patch.yml` override,
+delete that block too.
+
+## For developers
+
+This repository is a configuration-only bundle: two files, no build step.
+
+| File | Owns |
+| --- | --- |
+| [cordis.patch.yml](cordis.patch.yml) | the two rows this bundle inserts and their defaults |
+| [verify-live.mjs](verify-live.mjs) | a check that drives the MCP server without a Harness |
+
+`verify-live.mjs` lists the tool catalog, opens a URL, reads the page title, and
+writes a screenshot. Run it from a DeepSeek Harness source checkout:
 
 ```sh
 cd packages/experimental/browser-use-chrome-devtools-mcp
@@ -158,15 +186,15 @@ export DSH_MCP_SDK=$PWD/packages/mcp/mcp-client/node_modules/@modelcontextprotoc
 DSH_MCP_HEADLESS=true node dsh-chrome-devtools/verify-live.mjs https://example.com dsh-chrome-devtools/live-check.png
 ```
 
-`DSH_MCP_HEADLESS=true` is only for a sandboxed shell that cannot reach the X
-server; the bundle itself launches a visible window. Set `DSH_MCP_EXECUTABLE` to
-test a specific Chrome or a wrapper.
+Set `DSH_MCP_HEADLESS=true` only in a shell that cannot reach the X server; the
+bundle itself opens a window. Set `DSH_MCP_EXECUTABLE` to test a particular Chrome
+or a wrapper.
 
-A profile that installs this bundle from a git spec installs its `dependencies`
-too. A profile that links this directory as a local bundle does not, and the two
-rows then resolve from whatever the Harness installation already carries; that is
-how the author's development profile works, and it is why the dependency versions
-above are pinned to the Harness release they were verified against.
+The two `dependencies` in `package.json` are the whole reason this plugin works on
+a released Harness: the browser packages are not part of a published `dsh`, so
+they install with the bundle. A profile that installs this repository from a git
+spec installs them. A profile that links this directory as a local bundle does
+not, and the rows then resolve from whatever the Harness installation carries.
 
 ## License
 
